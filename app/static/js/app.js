@@ -1,0 +1,6 @@
+async function getJson(url){const r=await fetch(url);if(!r.ok)throw new Error("HTTP "+r.status);return r.json()}
+function set(id,text){document.getElementById(id).textContent=String(text)}
+async function weather(){try{const d=await getJson("/api/weather"),f=d.facts;set("avg",f.average_wind_speed_ms);set("max",f.maximum_wind_speed_ms);set("count",f.observation_count);set("over",f.wind_speed_over_5ms_count);set("rain",f.precipitation_missing_count);set("period",d.period.start.slice(0,10)+" ~ "+d.period.end.slice(0,10)+" · 서울 ASOS 108");set("weather-message","검증된 Fact Sheet 기반 · 실시간 아님 · 강수량 결측은 무강수와 다름")}catch(e){set("weather-message","데이터 읽기 실패: 파일을 확인하세요.")}}
+async function review(){try{const d=await getJson("/api/review");set("review-status",d.status_ko);set("review-date",d.reviewed_at||"—");set("published",d.published?"공개":"미공개");set("comment",d.comment||"")}catch(e){set("review-status","조회 실패")}}
+async function article(){try{const d=await getJson("/api/article");set("article",d.body)}catch(e){set("article",e.message.includes("403")?"승인되지 않은 기사이므로 표시하지 않습니다.":"기사 조회 실패")}}
+weather();review();article();
