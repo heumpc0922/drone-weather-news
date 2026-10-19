@@ -1,0 +1,45 @@
+{
+  "project": "드론 운용 기상정보 뉴스",
+  "fact_sheet_version": "draft-1",
+  "compiled_on": "2026-10-19",
+  "data_source": {
+    "agency": "기상청 기상자료개방포털",
+    "dataset": "종관기상관측(ASOS) 시간자료",
+    "station_id": 108,
+    "station_name": "서울",
+    "original_file": "OBS_ASOS_TIM_20261019111228.csv",
+    "local_database": "drone_weather_news",
+    "table": "observation"
+  },
+  "observation_period": {
+    "start": "2026-10-12 00:00:00",
+    "end": "2026-10-18 23:00:00",
+    "time_zone": "Asia/Seoul"
+  },
+  "verified_facts": {
+    "observation_count": 168,
+    "missing_hourly_records": 0,
+    "average_wind_speed_ms": 2.45,
+    "maximum_wind_speed_ms": 5.9,
+    "wind_speed_over_5ms_count": 2,
+    "precipitation_missing_count": 139,
+    "invalid_humidity_records": 0
+  },
+  "verification": {
+    "methods": [
+      "Python CSV 집계",
+      "MySQL SELECT 집계"
+    ],
+    "status": "수치 상호 일치 (사용자가 실행 화면 확인)",
+    "mysql_crud_test": "가상 관측자료 생성·조회·수정·삭제 후 서울 자료 168건 유지 확인",
+    "mysql_constraint_test": "습도 150% 입력 거부 (MySQL 오류 3819)"
+  },
+  "editorial_cautions": [
+    "서울 ASOS 108의 지상 관측값을 드론 비행 고도 및 현장 기상으로 일반화하지 않는다.",
+    "평균 풍속, 최대 풍속만으로 드론 비행 가능·불가능을 판정하지 않는다.",
+    "5m/s는 이번 실습에서 사용한 분석 기준이며 법적·기체 공통 운용 제한값이라고 단정하지 않는다.",
+    "강수량 결측 139건은 비가 오지 않았음을 의미하지 않는다.",
+    "데이터 기간은 2026년 10월 12~18일이며, 향후 전체 계절·연간 추세를 추정하지 않는다."
+  ],
+  "status": "기사 생성 전 사람이 출처·조건을 검증해야 하는 초안"
+}
