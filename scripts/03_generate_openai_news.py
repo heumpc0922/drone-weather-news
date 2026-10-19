@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 
 # 1. 현재 파일이 있는 폴더를 확인합니다.
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # 2. 같은 폴더의 .env에서 API 키를 읽습니다.
 load_dotenv(BASE_DIR / ".env")
@@ -24,7 +24,7 @@ if not api_key or api_key == "여기에_본인의_OpenAI_API_키":
     )
 
 # 3. Fact Sheet JSON 파일을 읽습니다.
-fact_path = BASE_DIR / "01_drone_weather_fact_sheet.json"
+fact_path = BASE_DIR / "data" / "processed" / "01_drone_weather_fact_sheet.json"
 
 with open(fact_path, "r", encoding="utf-8") as f:
     facts = json.load(f)
@@ -76,7 +76,7 @@ if not article or not article.strip():
     raise SystemExit("AI 응답에 기사 내용이 없습니다.")
 
 # 8. 기사 초안을 TXT 파일로 저장합니다.
-output_path = BASE_DIR / "04_ai_news_draft.txt"
+output_path = BASE_DIR / "articles" / "04_ai_news_draft.txt"
 
 output_path.write_text(
     article,

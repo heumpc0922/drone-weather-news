@@ -7,13 +7,13 @@ from datetime import datetime
 from pathlib import Path
 
 # 현재 Python 파일이 저장된 폴더
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # 사람이 수정한 기사 파일
-article_path = BASE_DIR / "06_revised_drone_weather_article.txt"
+article_path = BASE_DIR / "articles" / "06_revised_drone_weather_article.txt"
 
 # 승인 결과를 저장할 파일
-result_path = BASE_DIR / "08_article_approval.json"
+result_path = BASE_DIR / "articles" / "08_article_approval.json"
 
 # 수정된 기사가 존재하는지 확인
 if not article_path.exists():

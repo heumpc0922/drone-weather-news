@@ -9,7 +9,7 @@ import mysql.connector
 from dotenv import load_dotenv
 
 # 현재 Python 파일과 같은 폴더의 .env를 읽습니다.
-env_path = Path(__file__).with_name(".env")
+env_path = Path(__file__).resolve().parent.parent / ".env"
 load_dotenv(env_path)
 
 try:
