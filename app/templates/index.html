@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ko">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DRONE WEATHER NEWS | 하늘을 읽는 데이터</title>
+<link rel="stylesheet" href="/static/css/style.css">
+<script defer src="/static/js/app.js"></script></head>
+<body>
+<header><a class="brand" href="#top">✈ DRONE <em>WEATHER</em> NEWS</a>
+<nav><a href="#weather">기상정보</a><a href="#news">AI 뉴스</a><a href="#review">검수 기록</a></nav></header>
+<main id="top">
+<section class="hero"><div class="eyebrow">SEOUL ASOS 108 · DATA JOURNALISM</div>
+<h1>하늘을 읽는 데이터<span>.</span></h1>
+<p>검증된 기상자료로 작성하는 드론 운용 기상정보 뉴스</p>
+<div class="warning">2026년 10월 12~18일 서울 지상 관측 · 실시간 기상정보 또는 드론 운항 안전판정 서비스가 아닙니다.</div></section>
+<section id="weather"><div class="eyebrow">01 / WEATHER DATA</div><h2>기상정보 대시보드</h2><p id="period">데이터 불러오는 중...</p>
+<div class="cards">
+<article class="card">평균 풍속<strong id="avg">—</strong><small>m/s</small></article>
+<article class="card">최대 풍속<strong id="max">—</strong><small>m/s</small></article>
+<article class="card">관측 건수<strong id="count">—</strong><small>건</small></article>
+<article class="card">5m/s 초과<strong id="over">—</strong><small>건 (연구용 기준)</small></article>
+<article class="card">강수량 결측<strong id="rain">—</strong><small>건 (무강수 아님)</small></article>
+</div><p id="weather-message" class="note">Fact Sheet를 확인하는 중...</p></section>
+<section id="news"><div class="eyebrow">02 / AI NEWSROOM</div><h2>AI 기상정보 뉴스</h2><div class="panel"><p class="tag">AI 생성 → 사람 검수</p><article id="article" class="article">기사 불러오는 중...</article><p class="note">AI 원본이 아닌 승인된 수정 기사만 제공합니다. 승인과 실제 게시는 별개입니다.</p></div></section>
+<section id="review"><div class="eyebrow">03 / EDITORIAL REVIEW</div><h2>기사 검수 현황</h2><div class="panel">
+<p>검수 상태: <strong id="review-status">조회 중...</strong></p>
+<p>검수 시각: <span id="review-date">—</span></p>
+<p>실제 공개: <strong id="published">—</strong></p>
+<p class="note" id="comment"></p></div></section>
+<footer>자료 출처: 기상청 기상자료개방포털 · ASOS 서울(108) · 교육용 과거 자료</footer>
+</main></body></html>
