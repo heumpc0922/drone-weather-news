@@ -4,7 +4,7 @@ import csv
 from pathlib import Path
 from datetime import datetime, timedelta
 
-csv_path = Path(__file__).with_name("OBS_ASOS_TIM_20261019111228.csv")
+csv_path = Path(__file__).resolve().parent.parent / "data" / "raw" / "OBS_ASOS_TIM_20261019111228.csv"
 
 # 1. CSV 파일 읽기: 기상청 CSV는 보통 CP949(한국어 인코딩)입니다.
 with csv_path.open("r", encoding="cp949", newline="") as file:

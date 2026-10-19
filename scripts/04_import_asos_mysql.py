@@ -7,8 +7,8 @@ from pathlib import Path
 import mysql.connector
 from dotenv import load_dotenv
 
-FOLDER = Path(__file__).resolve().parent
-CSV_FILE = FOLDER / "OBS_ASOS_TIM_20261019111228.csv"
+FOLDER = Path(__file__).resolve().parent.parent
+CSV_FILE = FOLDER / "data" / "raw" / "OBS_ASOS_TIM_20261019111228.csv"
 load_dotenv(FOLDER / ".env")
 
 

@@ -6,9 +6,7 @@ import json
 from pathlib import Path
 
 # 현재 Python 파일과 같은 폴더에서 JSON을 찾습니다.
-file_path = Path(__file__).with_name(
-    "01_drone_weather_fact_sheet.json"
-)
+file_path = Path(__file__).resolve().parent.parent / "data" / "processed" / "01_drone_weather_fact_sheet.json"
 
 # UTF-8로 파일을 열어 데이터를 읽습니다.
 with open(file_path, "r", encoding="utf-8") as file:
