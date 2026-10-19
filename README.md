@@ -13,6 +13,40 @@
 - `app/` — FastAPI 서버 (현재 기본 데이터 확인용 페이지)
 - `tests/` — 향후 자동 테스트
 
+## 빠른 실행 — 복사해서 순서대로 실행 (Windows PowerShell)
+
+VS Code에서 프로젝트 최상위 폴더 `drone-weather-news`를 열고 **터미널 → 새 터미널**을 실행하세요.
+
+```powershell
+# 1. 가상환경 생성 (최초 1회)
+py -m venv .venv
+
+# 2. 가상환경 활성화 (새 터미널을 열 때마다)
+.\.venv\Scripts\Activate.ps1
+
+# 3. 패키지 설치 (최초 1회 / requirements 변경 시)
+python -m pip install -r requirements.txt
+
+# 4. 환경변수 파일 생성 (최초 1회)
+Copy-Item .env.example .env
+
+# 5. .env에 본인의 MySQL 정보 및 OpenAI API 키를 입력한 후 실행
+python -m uvicorn app.main:app --reload
+```
+
+4번 실행 후 **`.env` 파일을 열어서 예시 비밀번호와 API 키를 본인 값으로 변경**하세요. 이미 `.env`가 있다면 `Copy-Item` 명령을 다시 실행하지 마세요(기존 설정을 보존하기 위해서입니다).
+
+가상환경 활성화가 차단된다면 현재 PowerShell 터미널에서 다음 두 줄을 실행합니다.
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\.venv\Scripts\Activate.ps1
+```
+
+성공하면 `(.venv)`가 표시되고, 브라우저에서 **http://127.0.0.1:8000** 으로 접속할 수 있습니다. 종료: 서버는 `Ctrl+C`, 가상환경은 `deactivate`. `.env`는 **절대로 GitHub에 업로드하지 마세요.**
+
+---
+
 ## 1. 실행 환경: Windows 11 + VS Code + PowerShell
 
 필요한 프로그램: **Python**, **VS Code**, **MySQL Server** (DB 연동 시). 아래 명령어는 **GitHub 저장소 최상위 폴더**에서 실행합니다.
