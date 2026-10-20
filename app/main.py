@@ -6,11 +6,13 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from app.routers.mysql_observations import router as mysql_router
 
 ROOT = Path(__file__).resolve().parent.parent
 DIR = Path(__file__).resolve().parent
 app = FastAPI(title="드론 운용 기상정보 뉴스", version="1.2.0")
 app.mount("/static", StaticFiles(directory=DIR / "static"), name="static")
+app.include_router(mysql_router)
 
 
 def load_json(path: Path) -> dict:

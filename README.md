@@ -181,3 +181,17 @@ FastAPI /api/observations?limit=24 는 기상청 CSV에서 서울 관측자료�
 테스트: python -m pytest -q
 
 **주의:** 과거 기상자료 기반 교육용 서비스이며 실시간 운항 지도, 비행지수, 비행 허가·안전 판정 기능은 없습니다. 강수량 결측은 무강수가 아닙니다. 기사의 검수 승인과 실제 게시도 구분합니다.
+
+## MySQL CRUD API (교육용, 기본 쓰기 금지)
+
+- `GET /api/mysql/observations?limit=20` — 실제 MySQL 서울 ASOS(108) 관측 읽기 (원본 변경 안 함)
+- `GET /api/mysql/demo` — 별도 실습관측소(9999)의 `CRUD_API_TEST` 자료만 조회
+- `POST /api/mysql/demo` — 실습자료 등록
+- `PATCH /api/mysql/demo/{observation_id}` — 실습자료 풍속만 수정
+- `DELETE /api/mysql/demo/{observation_id}` — 실습자료 삭제
+
+실습 쓰기는 **기본적으로 403 비활성화**입니다. 개인 로컬 PC에서만 `.env`에 `ENABLE_DEMO_CRUD=true`를 추가해 활성화하세요. 실제 서비스 배포 시에는 활성화하면 안 됩니다. API 인증이 추가되어 있지 않으므로 서버는 로컬(`127.0.0.1`)에서만 실행하세요.
+
+`python -m uvicorn app.main:app --reload` 실행 후 `http://127.0.0.1:8000/docs`의 `MySQL CRUD (교육용)` 그룹에서 테스트합니다. 학원 DB에 `station_id=9999`가 등록되어 있어야 쓰기가 됩니다. 기존 서울 관측 168건은 쓰기 쿼리에서 `station_id=9999 AND source='CRUD_API_TEST'`로 격리되어 있습니다.
+
+`python -m pytest -q`는 실제 MySQL을 변경하지 않는 API 정책 테스트를 수행합니다.
