@@ -1,215 +1,127 @@
-# 드론 운용 기상정보 뉴스
+# 🚁 드론 운용 기상정보 뉴스 | Drone Weather News
 
-서울 ASOS 108 기상자료 분석 → MySQL 저장 → OpenAI 뉴스 생성 → 사람이 검수·승인하는 교육용 프로젝트입니다.
+**서울 ASOS 실측 168건 → MySQL 저장·검증 → Fact Sheet → OpenAI 기사 작성 → 사람 검수·승인 → FastAPI 웹 대시보드**
 
-## 프로젝트 폴더
+> **프로젝트 성격:** 기상청 과거 지상 관측자료를 분석해 드론 운용 관련 **기상정보 뉴스를 제작하는 교육용 웹 프로젝트**입니다. 실시간 관제, 비행 가능 여부 판단, 비행 허가 서비스가 아닙니다.
 
-- `docs/` — 기획서·기능정의서·화면설계서·DB 설계서
-- `scripts/` — 분석, MySQL 연결·적재, Fact Sheet 확인, AI 기사 생성, 승인
-- `database/` — MySQL 스키마·등록·조회 SQL
-- `data/raw/` — 기상청 원본 CSV (CP949 인코딩)
-- `data/processed/` — 검증된 Fact Sheet JSON
-- `articles/` — AI 뉴스 초안·수정 기사·검수 및 승인 기록
-- `app/` — FastAPI 서버, 서울 드론 배경 대시보드, MySQL CRUD 교육용 API
-- `tests/` — FastAPI 기본·MySQL API 보호 자동 테스트 (로컬 실행 결과 9개 통과)
+## 🔎 평가자용 1분 요약
 
-## 빠른 실행 — 복사해서 순서대로 실행 (Windows PowerShell)
+| 평가 포인트 | 직접 구현·검증한 내용 | 확인 위치 |
+|---|---|---|
+| 기획·설계 | PRD, 기능정의서, 화면설계서, MySQL DB 설계 | [docs/](docs/) |
+| 원천 데이터·정제 | 기상청 서울 ASOS **108번**, 2026-10-12~18, **168개 시간 관측** | [원본 CSV](data/raw/OBS_ASOS_TIM_20261019111228.csv), [분석 코드](scripts/02_analyze_seoul_asos.py) |
+| 데이터 검증 | 평균 풍속 **2.45m/s**, 최대 **5.9m/s**, 5m/s 초과 **2건**; 강수량 결측 **139건** | [Fact Sheet](data/processed/01_drone_weather_fact_sheet.json) |
+| MySQL 설계·적재 | **5개 테이블**: station, observation, article, article_source, review; 서울 관측자료 168건 | [database/](database/), [적재 코드](scripts/04_import_asos_mysql.py) |
+| CRUD 구현 | MySQL 직접 CRUD 및 **FastAPI POST/PATCH/DELETE**로 실습자료 등록·수정·삭제 | [CRUD API](app/routers/mysql_observations.py), [트랜잭션 SQL](database/05_mysql_crud_transaction_test.sql) |
+| 데이터 보호 | 실제 관측소 **108 읽기 전용**, 쓰기는 테스트 관측소 9999와 `CRUD_API_TEST` 출처만 허용; 기본 쓰기 비활성화 | [API 구현](app/routers/mysql_observations.py), [.env.example](.env.example) |
+| AI 기사·사람 검수 | OpenAI로 기사 초안 작성 → 수치·표현 점검 → 사람이 수정 기사 승인; **게시 상태는 미게시** | [기사·검수 결과](articles/), [생성 코드](scripts/03_generate_openai_news.py) |
+| 웹 디자인·시각화 | 서울 야경·드론 배경, 통계 카드 5개, 풍속 그래프, 최근 관측표, AI 뉴스·검수 결과 | [웹 HTML](app/templates/index.html), [CSS](app/static/css/style.css), [이미지](app/static/images/seoul-drone.jpg) |
+| 테스트 | **pytest 9개 통과**(로컬 실행 확인); FastAPI와 MySQL 실제 5건 조회 및 CRUD 시연 | [tests/](tests/), [MySQL 최종 SQL](database/06_mysql_final_data_integrity_check.sql) |
 
-VS Code에서 프로젝트 최상위 폴더 `drone-weather-news`를 열고 **터미널 → 새 터미널**을 실행하세요.
+### 실제 검증 결과 (2026-10-20, 로컬 학원 PC 실행)
+
+| 검증 | 결과 |
+|---|---|
+| `python -m pytest -q` | **9 passed** |
+| FastAPI `GET /api/mysql/observations?limit=5` | **200 OK**, 서울 관측자료 5건 |
+| `POST /api/mysql/demo` | **201 Created**, 테스트 ID **171** |
+| `PATCH /api/mysql/demo/171` | **200 OK**, 풍속 **3.0 → 4.5m/s** |
+| `DELETE /api/mysql/demo/171` | **200 OK**, 테스트 자료 삭제 |
+| `GET /api/mysql/demo` | **200 OK**, `{"rows":[]}` |
+| MySQL 최종 SQL 조회 | 전체 **168**, 서울 **168**, 남은 API 테스트 자료 **0** |
+
+**중요:** 위 결과는 당시 로컬 실행과 화면 캡처로 확인한 값입니다. GitHub 저장소에 학원 PC의 MySQL 데이터 자체가 들어 있는 것은 아닙니다. pytest 9개는 웹/API 정책 단위 테스트이며, 실제 DB CRUD는 별도 수동 실행으로 검증했습니다.
+
+## 🖥️ 실행 방법 — Windows 11 / VS Code / PowerShell
+
+GitHub에서 저장소 내려받기 (처음 한 번만):
 
 ```powershell
-# 1. 가상환경 생성 (최초 1회)
+git clone https://github.com/heumpc0922/drone-weather-news.git
+cd drone-weather-news
+```
+
+이미 내려받았다면 VS Code에서 해당 폴더를 열고 터미널에서 `git pull origin main`을 실행합니다.
+
+```powershell
+# 1. 가상환경 생성 (처음 한 번만)
 py -m venv .venv
 
-# 2. 가상환경 활성화 (새 터미널을 열 때마다)
+# 2. 가상환경 활성화 (새 터미널마다)
 .\.venv\Scripts\Activate.ps1
 
-# 3. 패키지 설치 (최초 1회 / requirements 변경 시)
+# 3. 패키지 설치
 python -m pip install -r requirements.txt
 
-# 4. 환경변수 파일 생성 (최초 1회)
+# 4. 환경 파일 생성 (처음 한 번만, 기존 .env가 있으면 생략!)
 Copy-Item .env.example .env
 
-# 5. .env에 본인의 MySQL 정보 및 OpenAI API 키를 입력한 후 실행
+# 5. .env에 MySQL 접속정보 설정 후 서버 실행
 python -m uvicorn app.main:app --reload
 ```
 
-4번 실행 후 **`.env` 파일을 열어서 예시 비밀번호와 API 키를 본인 값으로 변경**하세요. 이미 `.env`가 있다면 `Copy-Item` 명령을 다시 실행하지 마세요(기존 설정을 보존하기 위해서입니다).
+> `.env`에 `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE`를 로컬 DB에 맞게 설정합니다. **`ENABLE_DEMO_CRUD=false`를 유지**하세요. OpenAI API 키는 기사 생성 프로그램을 새로 실행할 때만 필요합니다. 비밀번호나 키는 절대 GitHub에 올리지 않습니다.
 
-가상환경 활성화가 차단된다면 현재 PowerShell 터미널에서 다음 두 줄을 실행합니다.
+- **웹사이트:** http://127.0.0.1:8000
+- **대화형 API 문서(Swagger):** http://127.0.0.1:8000/docs
+- **자동 테스트:** `python -m pytest -q`
+- **MySQL 연결 확인:** `python scripts/03_test_mysql_connection.py`
+- **종료:** 서버 실행 중 터미널에서 `Ctrl+C`
 
-```powershell
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-.\.venv\Scripts\Activate.ps1
+MySQL이 없는 환경에서도 저장된 CSV·Fact Sheet 기반 대시보드와 기본 API는 실행 가능하지만, **`/api/mysql/*`는 별도 MySQL Server와 데이터베이스 준비가 필요**합니다. MySQL 초기화·적재는 [스키마 SQL](database/01_drone_weather_schema.sql), [기초 데이터 SQL](database/02_drone_weather_data.sql), [CSV 적재 코드](scripts/04_import_asos_mysql.py)를 참조하세요. 학원 DB를 다른 PC로 복원하려면 별도 SQL Dump가 필요합니다. 기존 데이터가 있으면 중복 적재하지 마세요.
+
+PowerShell에서 활성화가 차단되면 현재 터미널에서만 다음을 실행합니다: `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`.
+
+## 🧩 주요 API 및 구현 구분
+
+| 엔드포인트 | 용도 |
+|---|---|
+| `GET /` | 드론 기상정보 뉴스 웹 대시보드 |
+| `GET /api/weather` | 검증된 Fact Sheet 통계 |
+| `GET /api/observations?limit=24` | **CSV 기반** 시간별 관측자료 (홈페이지 그래프·표) |
+| `GET /api/article` | 승인된 수정 기사 열람 |
+| `GET /api/review` | 사람 검수·게시 상태 |
+| `GET /api/mysql/observations?limit=5` | **MySQL 기반** 서울 관측자료 조회 |
+| `GET /api/mysql/demo` | 테스트 자료만 조회 |
+| `POST /api/mysql/demo`, `PATCH /api/mysql/demo/{id}`, `DELETE /api/mysql/demo/{id}` | 로컬 교육용 테스트 관측자료 CRUD |
+
+**웹 대시보드의 그래프는 CSV를 읽으며, MySQL 실측 조회는 별도 API에서 수행합니다.** 두 방식을 혼동하지 않도록 구분했습니다.
+
+실습용 쓰기 API는 로그인·인증이 없으므로 기본적으로 **403 차단**합니다. 실습이 꼭 필요한 경우에만 로컬 `.env`에서 `ENABLE_DEMO_CRUD=true`로 잠시 열고, 실습 후 반드시 `false`로 복구합니다. 공개 서버에서는 활성화하면 안 됩니다.
+
+## 📁 핵심 파일 찾아보기
+
+```text
+docs/                      기획서·기능·화면·DB 설계
+data/raw/                  기상청 CSV 원본
+data/processed/            검증 Fact Sheet JSON
+database/                  MySQL 스키마·적재·조회·CRUD·최종 검증 SQL
+scripts/                   Python 자료분석·MySQL 적재·OpenAI 기사·승인
+articles/                  AI 기사 초안·수정본·사람 검수·승인 기록
+app/main.py                FastAPI 실행 진입점
+app/database.py            MySQL 연결
+app/routers/mysql_observations.py  MySQL 조회·교육용 CRUD
+app/templates/index.html   웹 화면
+app/static/                CSS·JavaScript·드론 배경사진
+tests/                     pytest 자동 테스트
+.env.example               환경변수 예시 (비밀정보 없음)
+requirements.txt           실행 라이브러리
 ```
 
-성공하면 `(.venv)`가 표시되고, 브라우저에서 **http://127.0.0.1:8000** 으로 접속할 수 있습니다. 종료: 서버는 `Ctrl+C`, 가상환경은 `deactivate`. `.env`는 **절대로 GitHub에 업로드하지 마세요.**
+## ✅ 제작 과정과 검수·한계
+
+1. 기상청 ASOS(서울 108) 시간별 원본 CSV 수집 및 Python 분석.
+2. MySQL 5개 테이블 설계·적재; 제약조건 검사(습도 150% 입력 거부).
+3. 실제 수치만 포함한 Fact Sheet 정리 및 OpenAI로 AI 기사 초안 생성.
+4. 사람이 수치·표현을 확인하고 수정 기사 승인. 승인 정보는 [08_article_approval.json](articles/08_article_approval.json)에 저장; **`published:false`**는 미게시를 뜻함.
+5. FastAPI 기반 기상정보 뉴스 웹페이지와 MySQL CRUD 데모 구축, 자동 테스트 및 실제 DB CRUD 검증.
+
+**해석 주의:** 이 데이터는 **2026-10-12~18의 과거 지상 관측자료**입니다. 비행 고도 바람·현장 기상을 보장하지 않고 비행 가능 여부나 법적 허가를 판단하지 않습니다. 5m/s는 **학습용 분석 구분값**일 뿐 일률적 비행 제한 기준이 아닙니다. 강수량 결측 **139건을 무강수로 해석하지 않았습니다.** 배경 이미지는 제작된 콘셉트 이미지이며 실제 특정 시점 촬영사진이 아닙니다.
+
+**구현 범위 밖:** 실시간 관측 자동 갱신, 항공 안전 판정·지도, 사용자 로그인/권한 인증, 외부 공개 배포. 평가 시 완성 기능으로 오인되지 않도록 구분합니다.
 
 ---
 
-## 1. 실행 환경: Windows 11 + VS Code + PowerShell
+**GitHub 제출 링크:** https://github.com/heumpc0922/drone-weather-news
 
-필요한 프로그램: **Python**, **VS Code**, **MySQL Server** (DB 연동 시). 아래 명령어는 **GitHub 저장소 최상위 폴더**에서 실행합니다.
-
-```powershell
-# Git 저장소를 처음 내려받는 경우
-git clone https://github.com/heumpc0922/drone-weather-news.git
-cd drone-weather-news
-
-```
-
-이미 프로젝트를 다운로드했다면 VS Code의 [파일 → 폴더 열기]에서 `drone-weather-news` 폴더를 열고 [터미널 → 새 터미널]을 사용하세요. `git clone`은 한 번만 합니다.
-
-### 2. 가상환경(venv) 생성·활성화
-
-```powershell
-# 가상환경 생성 — 프로젝트 최초 1회
-py -m venv .venv
-
-# PowerShell에서 활성화 — VS Code 터미널을 새로 열 때마다 실행
-.\.venv\Scripts\Activate.ps1
-
-# 가상환경 안에 의존 패키지 설치
-python -m pip install -r requirements.txt
-```
-
-터미널 맨 앞에 `(.venv)`가 나타나면 활성화된 것입니다. VS Code에서 Python 인터프리터를 선택할 때는 `.venv\Scripts\python.exe`를 고릅니다.
-
-PowerShell에 *스크립트 실행이 차단되었습니다*라고 표시될 경우, **현재 터미널에 한해서만** 허용한 후 다시 활성화하세요.
-
-```powershell
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-.\.venv\Scripts\Activate.ps1
-```
-
-가상환경을 종료하려면 `deactivate`를 입력합니다.
-
-### 3. .env 파일 만들기
-
-프로젝트 루트에서 다음 명령을 실행합니다.
-
-```powershell
-Copy-Item .env.example .env
-```
-
-이제 VS Code에서 **루트의 `.env`** 파일을 열고, 아래 형식으로 로컬 MySQL 접속정보와 OpenAI API 키를 **본인 값으로** 바꾸세요.
-
-```dotenv
-MYSQL_HOST=127.0.0.1
-MYSQL_PORT=3306
-MYSQL_USER=root
-MYSQL_PASSWORD=여기에_본인_MySQL_비밀번호
-MYSQL_DATABASE=drone_weather_news
-OPENAI_API_KEY=여기에_본인_OpenAI_API_키
-```
-
-- `.env.example`에는 예시값만 유지하고, 실제 정보는 **`.env`에만** 저장합니다.
-- `.env`는 `.gitignore`에 의해 Git 추적에서 제외되도록 설정했습니다. 그래도 **GitHub 웹 업로드 시 수동으로 추가하지 마세요**.
-- API 키, 비밀번호, `.env` 내용을 스크린샷이나 채팅에 공유하지 마세요.
-- MySQL만 사용할 때는 OpenAI 키가 필요하지 않으며, 데이터 조회 웹페이지에는 키가 필요하지 않습니다.
-
-### 4. 기상자료 분석
-
-```powershell
-python scripts/02_analyze_seoul_asos.py
-python scripts/02_read_fact_sheet.py
-```
-
-CSV는 `data/raw/OBS_ASOS_TIM_20261019111228.csv`, Fact Sheet는 `data/processed/01_drone_weather_fact_sheet.json`에 있습니다.
-
-### 5. MySQL 준비·연결
-
-1. MySQL Server를 실행합니다.
-2. MySQL Workbench에서 `database/01_drone_weather_schema.sql`을 실행해 DB·테이블을 만듭니다.
-3. `database/02_drone_weather_data.sql`을 실행해 서울 관측소 `station_id=108` 정보를 등록합니다.
-4. 프로젝트 루트의 `.env` MySQL 정보를 확인합니다.
-5. 아래 명령으로 연결 확인 후 CSV를 적재합니다.
-
-```powershell
-python scripts/03_test_mysql_connection.py
-python scripts/04_import_asos_mysql.py
-```
-
-조회 SQL은 `database/03_drone_weather_queries.sql`에서 확인할 수 있습니다. 같은 CSV를 여러 번 적재해도 동일 관측시각의 중복 추가를 피하도록 작성되어 있습니다.
-
-### 6. FastAPI 웹서버 실행
-
-가상환경이 활성화된 터미널에서:
-
-```powershell
-python -m uvicorn app.main:app --reload
-```
-
-크롬에서 http://127.0.0.1:8000 접속, API 문서는 http://127.0.0.1:8000/docs 에서 확인합니다. 서버 종료는 터미널에서 `Ctrl + C`.
-
-현재 `app/main.py`는 기상 Fact Sheet, 승인된 수정 기사, 검수 기록을 읽기 전용 API와 웹 화면에 연결합니다. 기상 정보는 과거 데이터이며 실시간 운항 판단이 아닙니다.
-
-### 7. OpenAI 뉴스 생성 (선택, 유료 API 호출)
-
-```powershell
-python scripts/03_generate_openai_news.py
-```
-
-- `data/processed/`의 Fact Sheet를 입력으로 사용합니다.
-- 실행 시 OpenAI API 비용이 발생할 수 있습니다.
-- 결과는 `articles/04_ai_news_draft.txt`에 저장됩니다. 기존 초안을 **덮어쓸 수 있으므로** 보존이 필요하면 미리 별도 복사하세요.
-- AI 초안은 검수 전 공개하지 않습니다.
-
-### 8. 기사 검수·승인 (사람이 직접 선택)
-
-```powershell
-python scripts/07_review_and_approve.py
-```
-
-`articles/06_revised_drone_weather_article.txt`를 확인하고 승인(1)·보류(2), 검수자, 의견을 입력합니다. 결과는 `articles/08_article_approval.json`에 저장되며 기존 기록을 덮어씁니다. `published` 값은 `false`로 유지됩니다.
-
-## 주의사항
-
-- 서울 ASOS 108, **2026-10-12 ~ 2026-10-18** 자료는 과거 지상 관측입니다. 실시간 날씨 서비스가 아닙니다.
-- 강수량 결측은 무강수와 다르며, 풍속 5m/s 초과는 실습용 분류일 뿐 드론 비행 허가 기준이 아닙니다.
-- 공개된 `articles/`의 검수·승인 기록에는 개인정보가 없는지 확인하세요.
-- 폴더 재구성에 맞춰 파일 경로를 수정했지만 환경별 통합 실행은 추가 확인이 필요합니다.
-
-## 대시보드 확장 (2026-10-20)
-
-FastAPI /api/observations?limit=24 는 기상청 CSV에서 서울 관측자료를 읽어 최근 24건과 원본 테이블·풍속 그래프를 표시합니다. /api/weather, /api/article, /api/review 와 함께 관제센터 스타일 대시보드로 통합했습니다.
-
-가상환경 활성화 후 실행: python -m uvicorn app.main:app --reload
-
-테스트: python -m pytest -q
-
-**주의:** 과거 기상자료 기반 교육용 서비스이며 실시간 운항 지도, 비행지수, 비행 허가·안전 판정 기능은 없습니다. 강수량 결측은 무강수가 아닙니다. 기사의 검수 승인과 실제 게시도 구분합니다.
-
-## MySQL CRUD API (교육용, 기본 쓰기 금지)
-
-- `GET /api/mysql/observations?limit=20` — 실제 MySQL 서울 ASOS(108) 관측 읽기 (원본 변경 안 함)
-- `GET /api/mysql/demo` — 별도 실습관측소(9999)의 `CRUD_API_TEST` 자료만 조회
-- `POST /api/mysql/demo` — 실습자료 등록
-- `PATCH /api/mysql/demo/{observation_id}` — 실습자료 풍속만 수정
-- `DELETE /api/mysql/demo/{observation_id}` — 실습자료 삭제
-
-실습 쓰기는 **기본적으로 403 비활성화**입니다. 개인 로컬 PC에서만 `.env`에 `ENABLE_DEMO_CRUD=true`를 추가해 활성화하세요. 실제 서비스 배포 시에는 활성화하면 안 됩니다. API 인증이 추가되어 있지 않으므로 서버는 로컬(`127.0.0.1`)에서만 실행하세요.
-
-`python -m uvicorn app.main:app --reload` 실행 후 `http://127.0.0.1:8000/docs`의 `MySQL CRUD (교육용)` 그룹에서 테스트합니다. 학원 DB에 `station_id=9999`가 등록되어 있어야 쓰기가 됩니다. 기존 서울 관측 168건은 쓰기 쿼리에서 `station_id=9999 AND source='CRUD_API_TEST'`로 격리되어 있습니다.
-
-`python -m pytest -q`는 실제 MySQL을 변경하지 않는 API 정책 테스트를 수행합니다.
-
-## 제출 전 확인 (2026-10-20)
-
-- 서울 ASOS 108 과거 관측 168건을 MySQL에서 조회; 실습 데이터는 삭제 완료 (`database/06_mysql_final_data_integrity_check.sql` 검증 결과 **168 / 168 / 0**)
-- FastAPI `GET /api/mysql/observations?limit=5`: 로컬에서 `200 OK`, 실측 5건 반환 확인
-- 교육용 CRUD: `POST` 201, `PATCH` 200, `DELETE` 200, 사후 `GET /api/mysql/demo` 결과 `rows: []` 확인 (테스트 레코드 id 171)
-- `python -m pytest -q`: 로컬에서 **9 passed** 확인. 단, 이 자동 테스트만으로 실제 DB 쓰기 흐름까지 보장하는 것은 아님
-- 드론 서울 야경 합성 이미지는 `app/static/images/seoul-drone.jpg`에 포함됨. 실제 서울 특정 시점의 관측/촬영 증빙이 아님
-- 제출 전 로컬 `.env`에 **`ENABLE_DEMO_CRUD=false`** 인지 확인 (비공개, GitHub 미업로드)
-- 검수 승인과 기사 게시 상태 구분: `published:false`는 **미게시**
-- 본 프로젝트는 **실시간 기상/항공 안전 판정 시스템 아님**; 실시간 수집, 권한 인증, 외부 배포는 평가 시 별도 구현 여부 확인 필요
-
-### 발표용 데모 순서
-
-1. `/` — 서울 드론 배경과 통계·풍속 그래프·관측표·AI 기사·검수 현황
-2. `/docs` — `GET /api/mysql/observations?limit=5`로 실제 MySQL 조회
-3. `python -m pytest -q` — 자동 테스트 9개 확인
-4. Workbench에서 `database/06_mysql_final_data_integrity_check.sql` 실행 — 결과 `168 / 168 / 0` 확인
-
-**보안:** API 키와 DB 비밀번호는 `.env`에만 보관하며 외부에 공유하지 않습니다. API 테스트용 쓰기는 기본적으로 비활성화 상태를 유지하세요.
+**시연 순서 추천:** (1) `/` 웹디자인·그래프·AI 뉴스 → (2) `/docs`의 MySQL 조회 → (3) `python -m pytest -q` 9개 통과 → (4) `database/06_mysql_final_data_integrity_check.sql`로 **168 / 168 / 0** 확인.
