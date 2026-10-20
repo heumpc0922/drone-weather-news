@@ -1,30 +1,7 @@
-<!doctype html>
-<html lang="ko">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>DRONE WEATHER NEWS | 하늘을 읽는 데이터</title>
-<link rel="stylesheet" href="/static/css/style.css">
-<script defer src="/static/js/app.js"></script></head>
-<body>
-<header><a class="brand" href="#top">✈ DRONE <em>WEATHER</em> NEWS</a>
-<nav><a href="#weather">기상정보</a><a href="#news">AI 뉴스</a><a href="#review">검수 기록</a></nav></header>
-<main id="top">
-<section class="hero"><div class="eyebrow">SEOUL ASOS 108 · DATA JOURNALISM</div>
-<h1>하늘을 읽는 데이터<span>.</span></h1>
-<p>검증된 기상자료로 작성하는 드론 운용 기상정보 뉴스</p>
-<div class="warning">2026년 10월 12~18일 서울 지상 관측 · 실시간 기상정보 또는 드론 운항 안전판정 서비스가 아닙니다.</div></section>
-<section id="weather"><div class="eyebrow">01 / WEATHER DATA</div><h2>기상정보 대시보드</h2><p id="period">데이터 불러오는 중...</p>
-<div class="cards">
-<article class="card">평균 풍속<strong id="avg">—</strong><small>m/s</small></article>
-<article class="card">최대 풍속<strong id="max">—</strong><small>m/s</small></article>
-<article class="card">관측 건수<strong id="count">—</strong><small>건</small></article>
-<article class="card">5m/s 초과<strong id="over">—</strong><small>건 (연구용 기준)</small></article>
-<article class="card">강수량 결측<strong id="rain">—</strong><small>건 (무강수 아님)</small></article>
-</div><p id="weather-message" class="note">Fact Sheet를 확인하는 중...</p></section>
-<section id="news"><div class="eyebrow">02 / AI NEWSROOM</div><h2>AI 기상정보 뉴스</h2><div class="panel"><p class="tag">AI 생성 → 사람 검수</p><article id="article" class="article">기사 불러오는 중...</article><p class="note">AI 원본이 아닌 승인된 수정 기사만 제공합니다. 승인과 실제 게시는 별개입니다.</p></div></section>
-<section id="review"><div class="eyebrow">03 / EDITORIAL REVIEW</div><h2>기사 검수 현황</h2><div class="panel">
-<p>검수 상태: <strong id="review-status">조회 중...</strong></p>
-<p>검수 시각: <span id="review-date">—</span></p>
-<p>실제 공개: <strong id="published">—</strong></p>
-<p class="note" id="comment"></p></div></section>
-<footer>자료 출처: 기상청 기상자료개방포털 · ASOS 서울(108) · 교육용 과거 자료</footer>
-</main></body></html>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DRONE WEATHER NEWS | 기상정보 관제 대시보드</title><link rel="stylesheet" href="/static/css/style.css"><script defer src="/static/js/app.js"></script></head><body>
+<header><a class="brand" href="#top">✦ DRONE <em>WEATHER</em> NEWS<small>기상정보 뉴스 · SEOUL ASOS 108</small></a><nav><a href="#top">홈</a><a href="#weather">기상정보</a><a href="#charts">데이터 분석</a><a href="#news">AI 뉴스</a><a href="#review">검수</a></nav><span class="status">● ARCHIVE MODE</span></header>
+<main id="top"><section class="hero"><div class="drone" aria-hidden="true"><svg viewBox="0 0 420 260" fill="none" xmlns="http://www.w3.org/2000/svg"><g stroke="#a7edfd" stroke-width="5" stroke-linejoin="round" fill="#0c2946"><path d="M210 105L80 50M210 105l130-55M210 130L80 200M210 130l130 70"/><circle cx="80" cy="50" r="34"/><circle cx="340" cy="50" r="34"/><circle cx="80" cy="200" r="34"/><circle cx="340" cy="200" r="34"/><path d="M165 100L210 79l46 21-46 45z"/></g><g stroke="#9cecf3" stroke-width="3" opacity=".8"><path d="M30 48h100M290 48h100M30 199h100M290 199h100"/></g><circle cx="210" cy="118" r="15" fill="#57d9e0"/></svg></div><p class="overline">DRONE INTELLIGENCE · VERIFIED WEATHER DATA</p><h1>하늘을 읽는 데이터,<br><span>드론 운용 기상정보 뉴스</span></h1><p class="lead">서울 ASOS 관측자료로 만드는 AI 기상정보 뉴스룸.<br>데이터 분석부터 사람이 직접 검수한 기사까지 한눈에 확인하세요.</p><a href="#weather" class="cta">기상정보 대시보드 보기 ↗</a><p class="warning">ⓘ 2026.10.12~10.18 과거 지상 관측자료를 활용한 교육용 서비스입니다. 실시간 관제·비행 안전 판정이 아닙니다.</p></section>
+<section id="weather"><div class="heading"><p>01 / WEATHER INTELLIGENCE</p><h2>서울 기상정보 대시보드</h2><small id="period">관측 기간을 불러오는 중...</small></div><div class="kpis"><article class="metric"><span>◈ 총 관측 건수</span><strong id="count">—</strong><small>서울 ASOS 108</small></article><article class="metric"><span>≈ 평균 풍속</span><strong id="avg">—</strong><small>m/s</small></article><article class="metric"><span>➶ 최대 풍속</span><strong id="max">—</strong><small>m/s</small></article><article class="metric"><span>⚑ 풍속 5m/s 초과</span><strong id="over">—</strong><small>건 · 교육용 분석기준</small></article><article class="metric"><span>◴ 강수량 결측</span><strong id="missing">—</strong><small>건 · 무강수 의미 아님</small></article></div></section>
+<div class="dashboard"><section id="charts" class="panel"><div class="panel-head"><div><p>02 / DATA ANALYTICS</p><h2>최근 관측 24시간 풍속 변화</h2></div><span class="tag">m/s · 실제 CSV</span></div><svg id="chart" viewBox="0 0 760 270" role="img" aria-label="관측 시간별 풍속 그래프"><text x="25" y="130" fill="#acc6d8">차트 로딩 중...</text></svg><p class="foot">점선 5m/s는 실습용 분류값이며 드론 운용 허용 기준이 아닙니다.</p></section><section class="panel summary"><div class="panel-head"><div><p>OBSERVATION STATION</p><h2>서울 기상관측소</h2></div><span class="tag">ASOS 108</span></div><div class="cloud">☁</div><div class="temp" id="temp">—</div><p id="last-time">최근 관측시간 조회 중</p><div class="weather-pairs"><div>풍속<strong id="wind">—</strong></div><div>습도<strong id="humidity">—</strong></div><div>강수량<strong id="rain">—</strong></div></div><p class="foot">드론 비행 고도의 바람과 다를 수 있습니다.</p></section></div>
+<div class="dashboard bottom"><section class="panel"><div class="panel-head"><div><p>03 / HOURLY OBSERVATIONS</p><h2>최근 관측 데이터</h2></div><a class="small-link" href="/api/observations?limit=168" target="_blank">전체 원본 조회 ↗</a></div><div class="scroll"><table><thead><tr><th>관측시각</th><th>지역</th><th>기온 °C</th><th>풍속 m/s</th><th>습도 %</th><th>강수량 mm</th></tr></thead><tbody id="observations"><tr><td colspan="6">읽는 중...</td></tr></tbody></table></div></section><section id="news" class="panel"><div class="panel-head"><div><p>04 / EDITORIAL NEWSROOM</p><h2>AI 기상정보 뉴스</h2></div><span class="tag" id="article-tag">검수 확인 중</span></div><div class="news-thumb">✎ <span>DATA-DRIVEN NEWS</span></div><h3 id="title">기사 로딩 중...</h3><p id="excerpt" class="muted">승인된 기사를 조회하고 있습니다.</p><button id="more" disabled>승인 기사 전문 읽기 →</button><div id="article" hidden class="article"></div><p class="foot">승인과 게시 완료는 별개입니다. 이 기사는 열람용 시연입니다.</p></section></div>
+<section id="review" class="panel review"><div class="panel-head"><div><p>05 / HUMAN FACT CHECK</p><h2>사람의 최종 검수 기록</h2></div><span class="tag">검수 상태</span></div><div class="reviewrow"><div><small>검수 결과</small><strong id="review-status">—</strong></div><div><small>게시 여부</small><strong id="publish-status">—</strong></div><div><small>검수 시각</small><strong id="review-date">—</strong></div></div><p id="comment" class="muted"></p></section><footer>✦ DRONE WEATHER NEWS · 기상청 기상자료개방포털 서울 ASOS(108) 출처 · 2026년 10월 과거 관측 기반 교육용 시연</footer></main></body></html>

@@ -1,14 +1,15 @@
 """서울 ASOS Fact Sheet와 사람 검수 기사를 표시하는 읽기 전용 웹서비스."""
 import json
+import csv
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 ROOT = Path(__file__).resolve().parent.parent
 DIR = Path(__file__).resolve().parent
-app = FastAPI(title="드론 운용 기상정보 뉴스", version="1.1.0")
+app = FastAPI(title="드론 운용 기상정보 뉴스", version="1.2.0")
 app.mount("/static", StaticFiles(directory=DIR / "static"), name="static")
 
 
@@ -56,3 +57,27 @@ def article():
         raise HTTPException(status_code=503, detail="기사 내용이 없습니다.")
     return {"body": body, "published": bool(record.get("published", False)),
             "notice": "사람이 승인한 기사 열람용이며, 실제 공개 여부와 다릅니다."}
+
+
+@app.get("/api/observations")
+def observations(limit: int = Query(24, ge=1, le=168)):
+    path = ROOT / "data" / "raw" / "OBS_ASOS_TIM_20261019111228.csv"
+    try:
+        with path.open("r", encoding="cp949", newline="") as f:
+            rows = list(csv.DictReader(f))
+    except UnicodeError:
+        with path.open("r", encoding="utf-8-sig", newline="") as f:
+            rows = list(csv.DictReader(f))
+    except OSError as exc:
+        raise HTTPException(status_code=503, detail="관측자료 CSV를 읽지 못했습니다.") from exc
+    def num(value):
+        return float(value) if value and value.strip() else None
+    data = [{
+        "observed_at": r["일시"], "station": "서울",
+        "temperature_c": num(r["기온(°C)"]),
+        "wind_speed_ms": num(r["풍속(m/s)"]),
+        "humidity_pct": num(r["습도(%)"]),
+        "precipitation_mm": num(r["강수량(mm)"])
+    } for r in rows if r["지점"].strip() == "108"]
+    data.sort(key=lambda x: x["observed_at"])
+    return {"total": len(data), "realtime": False, "rows": data[-limit:]}
