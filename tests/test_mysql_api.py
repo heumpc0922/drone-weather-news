@@ -17,6 +17,6 @@ def test_invalid_wind_speed():
     }).status_code == 422
 
 def test_api_registered():
-    paths = {r.path for r in app.routes}
+    paths = {r.path for r in app.routes if hasattr(r, "path")}
     assert "/api/mysql/observations" in paths
     assert "/api/mysql/demo" in paths
