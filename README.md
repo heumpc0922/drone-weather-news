@@ -10,8 +10,8 @@
 - `data/raw/` — 기상청 원본 CSV (CP949 인코딩)
 - `data/processed/` — 검증된 Fact Sheet JSON
 - `articles/` — AI 뉴스 초안·수정 기사·검수 및 승인 기록
-- `app/` — FastAPI 서버 (현재 기본 데이터 확인용 페이지)
-- `tests/` — 향후 자동 테스트
+- `app/` — FastAPI 서버, 서울 드론 배경 대시보드, MySQL CRUD 교육용 API
+- `tests/` — FastAPI 기본·MySQL API 보호 자동 테스트 (로컬 실행 결과 9개 통과)
 
 ## 빠른 실행 — 복사해서 순서대로 실행 (Windows PowerShell)
 
@@ -56,8 +56,6 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 git clone https://github.com/heumpc0922/drone-weather-news.git
 cd drone-weather-news
 
-# 구조 변경 PR을 검토 중인 경우, 새 구조가 있는 브랜치 선택
-git switch chore/reorganize-docs-and-source
 ```
 
 이미 프로젝트를 다운로드했다면 VS Code의 [파일 → 폴더 열기]에서 `drone-weather-news` 폴더를 열고 [터미널 → 새 터미널]을 사용하세요. `git clone`은 한 번만 합니다.
@@ -195,3 +193,23 @@ FastAPI /api/observations?limit=24 는 기상청 CSV에서 서울 관측자료�
 `python -m uvicorn app.main:app --reload` 실행 후 `http://127.0.0.1:8000/docs`의 `MySQL CRUD (교육용)` 그룹에서 테스트합니다. 학원 DB에 `station_id=9999`가 등록되어 있어야 쓰기가 됩니다. 기존 서울 관측 168건은 쓰기 쿼리에서 `station_id=9999 AND source='CRUD_API_TEST'`로 격리되어 있습니다.
 
 `python -m pytest -q`는 실제 MySQL을 변경하지 않는 API 정책 테스트를 수행합니다.
+
+## 제출 전 확인 (2026-10-20)
+
+- 서울 ASOS 108 과거 관측 168건을 MySQL에서 조회; 실습 데이터는 삭제 완료 (`database/06_mysql_final_data_integrity_check.sql` 검증 결과 **168 / 168 / 0**)
+- FastAPI `GET /api/mysql/observations?limit=5`: 로컬에서 `200 OK`, 실측 5건 반환 확인
+- 교육용 CRUD: `POST` 201, `PATCH` 200, `DELETE` 200, 사후 `GET /api/mysql/demo` 결과 `rows: []` 확인 (테스트 레코드 id 171)
+- `python -m pytest -q`: 로컬에서 **9 passed** 확인. 단, 이 자동 테스트만으로 실제 DB 쓰기 흐름까지 보장하는 것은 아님
+- 드론 서울 야경 합성 이미지는 `app/static/images/seoul-drone.jpg`에 포함됨. 실제 서울 특정 시점의 관측/촬영 증빙이 아님
+- 제출 전 로컬 `.env`에 **`ENABLE_DEMO_CRUD=false`** 인지 확인 (비공개, GitHub 미업로드)
+- 검수 승인과 기사 게시 상태 구분: `published:false`는 **미게시**
+- 본 프로젝트는 **실시간 기상/항공 안전 판정 시스템 아님**; 실시간 수집, 권한 인증, 외부 배포는 평가 시 별도 구현 여부 확인 필요
+
+### 발표용 데모 순서
+
+1. `/` — 서울 드론 배경과 통계·풍속 그래프·관측표·AI 기사·검수 현황
+2. `/docs` — `GET /api/mysql/observations?limit=5`로 실제 MySQL 조회
+3. `python -m pytest -q` — 자동 테스트 9개 확인
+4. Workbench에서 `database/06_mysql_final_data_integrity_check.sql` 실행 — 결과 `168 / 168 / 0` 확인
+
+**보안:** API 키와 DB 비밀번호는 `.env`에만 보관하며 외부에 공유하지 않습니다. API 테스트용 쓰기는 기본적으로 비활성화 상태를 유지하세요.
