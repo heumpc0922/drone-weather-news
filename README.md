@@ -125,3 +125,14 @@ requirements.txt           실행 라이브러리
 **GitHub 제출 링크:** https://github.com/heumpc0922/drone-weather-news
 
 **시연 순서 추천:** (1) `/` 웹디자인·그래프·AI 뉴스 → (2) `/docs`의 MySQL 조회 → (3) `python -m pytest -q` 9개 통과 → (4) `database/06_mysql_final_data_integrity_check.sql`로 **168 / 168 / 0** 확인.
+
+
+## 이용 조건
+
+- 프로젝트 코드: MIT License (`LICENSE` 파일 참고). 직접 작성했거나 배포 권한이 있는 코드에 적용
+- 기상 관측 데이터: 기상청 서울 ASOS 관측자료. 출처: 기상청 / 공공데이터 이용 조건 확인 필요
+- 분석 데이터 및 Fact Sheet: 기상청 관측자료를 가공한 결과. 원본 데이터의 이용 조건 확인 필요
+- AI 생성 기사: OpenAI를 활용한 기사 초안 및 사람의 검토·승인 절차 포함. 사용한 모델과 생성물의 이용 조건 확인 필요
+- 배경 이미지: README에 제작된 콘셉트 이미지로 기재됨. 제작 방법·원저작물 포함 여부·사용 권한 확인 필요
+
+※ MIT 라이선스는 제3자 데이터·이미지·외부 자료의 권리까지 자동으로 허락하지 않습니다.
