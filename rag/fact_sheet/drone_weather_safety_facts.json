@@ -1,0 +1,67 @@
+{
+  "project": "드론 기상안전 RAG 자동 팩트체킹",
+  "description": "기상청 ASOS 관측자료와 공식 드론 안전자료를 이용한 교육용 사실표",
+  "facts": [
+    {
+      "fact_id": "F-1",
+      "category": "weather",
+      "claim": "2026년 10월 12일부터 18일까지 서울의 평균 풍속은 2.45m/s였다.",
+      "value": 2.45,
+      "unit": "m/s",
+      "source": "기상청 서울 ASOS 108번",
+      "source_file": "data/processed/01_drone_weather_fact_sheet.json",
+      "verification": "원본 CSV 및 분석 코드와 최종 대조 필요"
+    },
+    {
+      "fact_id": "F-2",
+      "category": "weather",
+      "claim": "해당 기간 서울의 최대 풍속 관측값은 5.9m/s였다.",
+      "value": 5.9,
+      "unit": "m/s",
+      "source": "기상청 서울 ASOS 108번",
+      "source_file": "data/processed/01_drone_weather_fact_sheet.json",
+      "verification": "원본 CSV 및 분석 코드와 최종 대조 필요"
+    },
+    {
+      "fact_id": "F-3",
+      "category": "weather",
+      "claim": "해당 기간 풍속이 5m/s를 초과한 관측은 2건이었다.",
+      "value": 2,
+      "unit": "건",
+      "source": "기상청 서울 ASOS 108번",
+      "source_file": "data/processed/01_drone_weather_fact_sheet.json",
+      "note": "5m/s는 교육용 분석 구분값이며 법적 비행 제한 기준이 아니다.",
+      "verification": "검증 완료: 기상청 원본 CSV를 Python pandas로 재계산하여 사실표 수치와 일치함 (2026-11-09)"
+    },
+    {
+      "fact_id": "F-4",
+      "category": "law",
+      "claim": "무인비행장치 조종자는 원칙적으로 기체를 육안으로 확인할 수 있는 범위에서 조종해야 한다.",
+      "source": "항공안전법 시행규칙 제310조 제4항",
+      "source_file": "rag/sources/항공안전법시행규칙_제310조.pdf",
+      "source_page": 2,
+      "note": "법령에서 정한 허가를 받은 경우 예외가 있다.",
+      "verification": "검증 완료: 항공안전법 시행규칙 제310조 제4항 PDF 원문과 대조 (2026-11-09), 최신 법령은 별도 확인 필요"
+    },
+    {
+      "fact_id": "F-5",
+      "category": "drone_manual",
+      "claim": "DJI Mini 4 Pro는 10.7m/s 이상의 강풍과 눈, 비, 안개 등 악천후에서 작동하지 않도록 안내한다.",
+      "value": 10.7,
+      "unit": "m/s",
+      "source": "DJI Mini 4 Pro 사용자 매뉴얼 v1.4 (2024.06)",
+      "source_file": "rag/sources/DJI_Mini_4_Pro_User_Manual_KR.pdf",
+      "source_page": 19,
+      "verification": "검증 완료: DJI Mini 4 Pro 사용자 매뉴얼 v1.4 19페이지 원문과 대조 (2026-11-09)"
+    },
+    {
+      "fact_id": "F-6",
+      "category": "flight_approval",
+      "claim": "드론원스톱 안내자료는 비행장 주변 관제권, 비행금지구역 및 고도 150m 이상 비행을 비행승인 대상으로 안내한다.",
+      "source": "드론원스톱 민원서비스",
+      "source_file": "rag/sources/드론원스톱 민원서비스.pdf",
+      "source_page": 2,
+      "verification": "검증 완료: 드론원스톱 PDF 2페이지 이미지에서 관제권·비행금지구역·150m 이상 안내 확인 (2026-11-09), 실제 비행 전 최신 승인 요건 확인 필요"
+    }
+  ]
+}

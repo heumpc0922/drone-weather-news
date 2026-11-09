@@ -6,3 +6,5 @@ venv/
 __pycache__/
 *.py[cod]
 .pytest_cache/
+# RAG 원본 PDF 문서 - GitHub 업로드 제외
+rag/sources/
