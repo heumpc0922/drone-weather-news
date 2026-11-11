@@ -250,7 +250,13 @@ $wind.strongest_hour        # hour=15, average_wind_speed_ms=3.31
 
 ### 8. 외부 평가용 배포
 
-`127.0.0.1`은 실행 중인 컴퓨터에서만 열립니다. 공개 HTTPS 주소는 배포 및 외부 접속 검증이 끝난 뒤 이 문서에 추가합니다.
+강사님은 아래 공개 주소를 브라우저에서 열어 확인할 수 있습니다. 로그인이나 별도 설치가 필요 없습니다.
+
+- [공개 대시보드](https://drone-weather-news.vercel.app/)
+- [서울 시간대별 평균 풍속 그래프](https://drone-weather-news.vercel.app/#hourly-wind)
+- [시간대별 평균 풍속 API](https://drone-weather-news.vercel.app/api/hourly-wind)
+
+공개 환경에서 그래프 막대 24개와 최고 평균 풍속 **15시 3.31 m/s**를 확인했습니다. API는 시간대별 관측 7건씩 총 168건의 집계 결과를 반환합니다. `127.0.0.1` 주소는 로컬 실행에 사용합니다.
 
 Vercel에서 이 저장소의 `main`을 가져오고, 프로젝트 루트는 저장소 최상위, 프레임워크는 **FastAPI**로 설정합니다. [배포 설정](vercel.json)은 CSV, Fact Sheet, 승인 기사·검수 기록, HTML과 정적 파일을 실행에 포함합니다. 공개 데모에서는 MySQL 조회와 CRUD 경로를 등록하지 않습니다. 로컬 실행에서는 기존 실습 경로를 계속 사용할 수 있습니다.
 
