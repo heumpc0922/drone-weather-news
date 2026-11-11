@@ -4,3 +4,100 @@ async function records(){try{const d=await get("/api/observations?limit=24"),a=d
 async function review(){try{const d=await get("/api/review");$("review-status").textContent=d.status_ko;$("publish-status").textContent=d.published?"게시":"미게시";$("review-date").textContent=d.reviewed_at||"—";$("comment").textContent=d.comment||"";}catch(e){$("review-status").textContent="조회 오류";}}
 async function article(){try{const d=await get("/api/article"),s=d.body.trim(),lines=s.split("\n").filter(x=>x.trim());$("title").textContent=lines[0]?.replace(/^#+\s*/,"")||"검수 승인 기사";$("excerpt").textContent=s.slice(0,175)+"…";$("article-tag").textContent=d.published?"게시":"승인 · 미게시";$("article").textContent=s;const btn=$("more");btn.disabled=false;btn.onclick=()=>{const body=$("article");body.hidden=!body.hidden;btn.textContent=body.hidden?"승인 기사 전문 읽기 →":"기사 접기 ↑";}}catch(e){$("title").textContent="승인된 기사가 없습니다";$("excerpt").textContent="검수 기록과 기사 파일을 확인하세요";}}
 Promise.all([weather(),records(),review(),article()]);
+
+async function hourlyWind() {
+  const svg = $("hourly-wind-chart");
+  const summary = $("hourly-wind-summary");
+
+  if (!svg || !summary) return;
+
+  try {
+    const data = await get("/api/hourly-wind");
+    const rows = data.rows;
+    const ns = "http://www.w3.org/2000/svg";
+
+    svg.replaceChildren();
+
+    function add(tag, attrs, content) {
+      const element = document.createElementNS(ns, tag);
+
+      Object.entries(attrs).forEach(([key, value]) => {
+        element.setAttribute(key, value);
+      });
+
+      if (content !== undefined) {
+        element.textContent = content;
+      }
+
+      svg.appendChild(element);
+    }
+
+    const left = 55;
+    const bottom = 260;
+    const top = 30;
+    const barWidth = 17;
+    const gap = 11;
+    const maxValue = Math.max(
+      4,
+      ...rows.map(r => r.average_wind_speed_ms ?? 0)
+    );
+
+    for (let v = 0; v <= maxValue; v += 1) {
+      const y = bottom - (v / maxValue) * (bottom - top);
+
+      add("line", {
+        x1: left, y1: y, x2: 745, y2: y,
+        stroke: "#335776", "stroke-dasharray": "4 6"
+      });
+
+      add("text", {
+        x: 15, y: y + 5,
+        fill: "#acc6d8", "font-size": 12
+      }, String(v));
+    }
+
+    rows.forEach((row, i) => {
+      if (row.average_wind_speed_ms === null) return;
+
+      const x = left + i * (barWidth + gap);
+      const height =
+        (row.average_wind_speed_ms / maxValue) * (bottom - top);
+
+      const isMax =
+        data.strongest_hour?.hour === row.hour;
+
+      add("rect", {
+        x: x,
+        y: bottom - height,
+        width: barWidth,
+        height: height,
+        rx: 3,
+        fill: isMax ? "#ff8b76" : "#55e9d2"
+      });
+
+      add("text", {
+        x: x + barWidth / 2,
+        y: 283,
+        fill: "#acc6d8",
+        "font-size": 10,
+        "text-anchor": "middle"
+      }, String(row.hour).padStart(2, "0"));
+    });
+
+    if (data.strongest_hour) {
+      const strongest = data.strongest_hour;
+
+      summary.textContent =
+        `평균 풍속이 가장 높은 시간: ${strongest.label} ` +
+        `(${strongest.average_wind_speed_ms} m/s)`;
+    } else {
+      summary.textContent = "분석 가능한 데이터가 없습니다.";
+    }
+
+  } catch (error) {
+    summary.textContent = "시간대별 평균 풍속을 불러오지 못했습니다.";
+    console.error(error);
+  }
+}
+
+hourlyWind();
