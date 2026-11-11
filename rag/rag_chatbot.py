@@ -9,6 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = BASE_DIR.parent
 
 load_dotenv(PROJECT_DIR / ".env")
+model = os.getenv("OPENAI_MODEL", "").strip() or "gpt-5.6-terra"
 
 fact_path = BASE_DIR / "fact_sheet" / "drone_weather_safety_facts.json"
 
@@ -41,7 +42,7 @@ matched_facts = [
 if not matched_facts:
     print("\n제공된 자료로는 확인할 수 없습니다.")
 
-elif not os.getenv("OPENAI_API_KEY"):
+elif not os.getenv("OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY") == "replace-locally":
     print("\n오류: OPENAI_API_KEY가 설정되지 않았습니다.")
 
 else:
@@ -68,7 +69,8 @@ else:
 
     try:
         response = client.responses.create(
-            model="gpt-5-mini",
+            model=model,
+            reasoning={"effort": "medium"},
             instructions=instructions,
             input=(
                 f"질문:\n{question}\n\n"
@@ -77,9 +79,13 @@ else:
             max_output_tokens=2000
         )
 
-        print("\n=== RAG 챗봇 답변 ===")
-        print(response.output_text)
+        if response.status == "completed" and response.output_text.strip():
+            print("\n=== RAG 챗봇 답변 ===")
+            print(response.output_text)
+        else:
+            print("\nAI 응답이 완료되지 않았습니다. 출력 토큰 한도와 응답 상태를 확인하세요.")
         print("\n=== API 응답 진단 ===")
+        print("모델:", response.model)
         print("응답 상태:", response.status)
         print("미완료 사유:", response.incomplete_details)
         print("토큰 사용량:", response.usage)
@@ -89,5 +95,5 @@ else:
     except Exception as error:
         print("\nOpenAI API 호출 중 오류가 발생했습니다.")
         print("오류 유형:", type(error).__name__)
-        print("오류 내용:", str(error))
-    
+        print("모델 접근 권한, API 잔액, 네트워크 연결을 확인하세요.")
+

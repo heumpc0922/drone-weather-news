@@ -137,13 +137,13 @@ requirements.txt           실행 라이브러리
 | 프로젝트 코드 | 이 저장소에서 직접 작성했거나 배포 권한이 있는 Python·HTML·CSS 등 코드 | **MIT License** 적용. 원문은 [LICENSE](LICENSE) 참고. 제3자 자료에는 자동 적용되지 않음 |
 | 기상 관측 원본 | **기상청 기상자료개방포털**, 서울 ASOS **108번**, **2026-10-12~18** 시간별 관측 168건. [원본 CSV](data/raw/OBS_ASOS_TIM_20261019111228.csv) | 자료 출처를 **기상청 기상자료개방포털**로 표시. 원본의 개별 공공누리 표시·이용 조건은 재배포 전에 확인 |
 | 분석 데이터·Fact Sheet | 위 기상청 원본을 Python으로 집계·가공한 프로젝트 분석 결과. [분석 코드](scripts/02_analyze_seoul_asos.py), [Fact Sheet](data/processed/01_drone_weather_fact_sheet.json) | 분석·가공 사실과 원본 출처를 함께 표시. 가공했다고 원본 자료의 권리가 사라지는 것은 아님 |
-| AI 기사 초안 | [생성 스크립트](scripts/03_generate_openai_news.py)에서 **OpenAI API / `gpt-5-mini`**를 사용하도록 지정. [AI 초안](articles/04_ai_news_draft.txt) | **AI 생성 초안**임을 표시하고 원본 수치·표현을 사람에게 검수받은 뒤 이용. 외부 인용문이 있다면 별도 출처 확인 |
+| AI 기사 초안 | 기존 [AI 초안](articles/04_ai_news_draft.txt)은 OpenAI API / `gpt-5-mini`로 생성. 현재 [생성 스크립트](scripts/03_generate_openai_news.py)의 기본 모델은 `gpt-5.6-terra` | **AI 생성 초안**임을 표시하고 원본 수치·표현을 사람에게 검수받은 뒤 이용. 외부 인용문이 있다면 별도 출처 확인 |
 | 사람 검수·수정 기사 | [검수 보고서](articles/05_article_review_report.md), [수정 기사](articles/06_revised_drone_weather_article.txt), [승인 기록](articles/08_article_approval.json) | 승인 기록상 **사람 검수일: 2026-10-19**, **미게시(`published:false`)**. 이는 AI 초안 생성일과 다르며, 생성 일시는 저장된 자료만으로 확인되지 않음 |
 | 웹 배경 이미지 | [`app/static/images/seoul-drone.jpg`](app/static/images/seoul-drone.jpg). 프로젝트 설명상 **서울·드론 콘셉트 이미지**로, 실제 특정 시각의 촬영 증거가 아님 | **제작 도구·제작 날짜·원저작물·권리자의 허락 여부는 저장소에서 확인되지 않음**. 따라서 MIT 적용 대상이라고 단정하지 않으며, 제3자가 재사용하려면 별도 권리 확인이 필요 |
 
 ### 출처 및 권리 관련 참고
 
-- 기상청 자료 제공처: [기상자료개방포털](https://data.kma.go.kr/)  
+- 기상청 자료 제공처: [기상자료개방포털](https://data.kma.go.kr/)
 - 기상청의 공식 [저작권 보호 및 정책](https://data.kma.go.kr/cmmn/static/staticPage.do?page=pageCr): 기상청이 권리를 보유하고 **공공누리 제1유형**으로 표시한 저작물은 **출처를 밝히고 이용**할 수 있습니다. 다만 **이 CSV 파일에 어떤 유형 표시가 붙어 있는지는 별도로 확인해야 하며**, 기상청 자료 전체에 일괄적으로 제1유형을 선언하는 것은 아닙니다.
 - OpenAI 모델 및 생성 방식: [생성 스크립트](scripts/03_generate_openai_news.py)를 통해 확인 가능. **AI 모델을 사용했다는 사실과 사람의 최종 책임**을 구분합니다.
 - 별도로 제3자 기사 문구, 사진·로고 등을 추가할 경우 **원저작자·원문 URL·인용 범위·이용 허락**을 개별 확인하여 출처를 기록합니다.
@@ -666,4 +666,60 @@ Python으로 기상 관측 수치를 검증하고,
 **기술:** Python, Pandas, PyMuPDF, OpenAI API, JSON, GitHub
 
 **프로젝트 유형:** AI 기반 데이터 저널리즘·드론 기상뉴스·기초 RAG
+
+## OpenAI 모델 마이그레이션 — 2026-11-11
+
+`gpt-5-mini`의 API 제공 종료일은 2026-12-11입니다. 공식 대체 모델인
+`gpt-5.6-terra`를 AI 기사 생성과 RAG 챗봇의 기본 모델로 적용했습니다.
+[OpenAI 종료·대체 모델 안내](https://developers.openai.com/api/docs/deprecations)
+
+| 수정 대상 | 적용 내용 |
+|---|---|
+| `scripts/03_generate_openai_news.py` | 새 기본 모델 사용, 미완료·빈 응답이면 기존 기사 초안 보존 |
+| `rag/rag_chatbot.py` | 새 기본 모델 사용, 미완료 응답 안내, 사용 모델 표시 |
+| `.env.example` | `OPENAI_MODEL=gpt-5.6-terra` 설정 예시 추가 |
+| `requirements.txt` | Responses API를 지원하는 OpenAI SDK 최소 버전 명시 |
+
+두 프로그램은 기존 Responses API와 `medium` 추론 수준을 사용합니다.
+환경변수 `OPENAI_MODEL`로 모델을 지정할 수 있고, 값이 비어 있으면 새 기본 모델을 사용합니다.
+기존 CSV·사실표·생성 기사·검수 기록은 당시의 검증 자료로 보관합니다.
+
+### 내 PC에 변경 사항 적용
+
+프로젝트 폴더에서 아래 명령을 실행합니다.
+
+```powershell
+git pull origin main
+python -m pip install --upgrade -r requirements.txt
+python -m pytest -q
+```
+
+기존 `.env`의 API 키는 그대로 사용합니다. `OPENAI_MODEL`이 이미 있다면
+`gpt-5.6-terra`로 변경합니다. 기사 생성과 챗봇 실행에는 해당 모델의 API 접근 권한과 사용 가능한 API 잔액이 필요합니다.
+
+```env
+OPENAI_MODEL=gpt-5.6-terra
+```
+
+기사 생성은 `python scripts/03_generate_openai_news.py`,
+챗봇은 `python rag/rag_chatbot.py`로 실행합니다.
+기사 생성 실행 시 `articles/04_ai_news_draft.txt`가 새 초안으로 갱신되므로
+기존 초안이 필요하면 실행 전에 별도로 보관합니다.
+
+### 검증 결과와 비용
+
+- 기존 웹/API 테스트 9개와 모델 전환 회귀 테스트 13개, 총 **22개 통과**.
+- 실제 OpenAI SDK와 가짜 HTTP 응답으로 모델 기본값·설정값, 요청 형식,
+  정상 응답, 빈 응답, 토큰 한도로 인한 미완료 응답을 검증.
+- RAG 근거가 없으면 API를 호출하지 않고 확인 불가로 응답하는 동작 검증.
+- 작업 환경에 API 키가 없어 새 모델의 **실제 AI 응답 품질과 계정 접근 권한은 미검증**.
+  위 테스트에서는 유료 API를 호출하지 않았습니다.
+- 일반 텍스트 100만 토큰 기준 새 모델의 입력은 **$2**, 출력은 **$12**.
+  기존 모델의 입력 $0.25, 출력 $2와 비교해 단가가 높아졌습니다.
+  실제 비용은 토큰 사용량과 요청 조건에 따라 달라집니다.
+  [새 모델 공식 요금](https://developers.openai.com/api/docs/models/gpt-5.6-terra)
+  · [기존 모델 공식 요금](https://developers.openai.com/api/docs/models/gpt-5-mini)
+
+공개 대시보드는 저장된 CSV·기사 파일을 읽어 표시합니다.
+기사 생성과 RAG 실행은 로컬 프로그램에서 수행하며, API 키는 로컬 `.env`에 보관합니다.
 

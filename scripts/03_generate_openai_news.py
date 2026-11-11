@@ -17,8 +17,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
 api_key = os.getenv("OPENAI_API_KEY")
+model = os.getenv("OPENAI_MODEL", "").strip() or "gpt-5.6-terra"
 
-if not api_key or api_key == "여기에_본인의_OpenAI_API_키":
+if not api_key or api_key in {"여기에_본인의_OpenAI_API_키", "replace-locally"}:
     raise SystemExit(
         "OPENAI_API_KEY가 설정되지 않았습니다. .env 파일을 확인하세요."
     )
@@ -59,7 +60,8 @@ fact_text = json.dumps(
 client = OpenAI(api_key=api_key)
 
 response = client.responses.create(
-    model="gpt-5-mini",
+    model=model,
+    reasoning={"effort": "medium"},
     instructions=instructions,
     input=(
         "다음 Fact Sheet만 근거로 드론 운용 기상정보 "
@@ -70,6 +72,12 @@ response = client.responses.create(
 )
 
 # 7. AI가 작성한 결과를 가져옵니다.
+if response.status != "completed":
+    raise SystemExit(
+        "AI 응답이 완료되지 않아 기존 초안을 보존했습니다. "
+        "출력 토큰 한도와 API 응답 상태를 확인하세요."
+    )
+
 article = response.output_text
 
 if not article or not article.strip():
