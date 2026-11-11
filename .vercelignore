@@ -1,0 +1,15 @@
+.env
+.env.*
+.venv/
+venv/
+**/__pycache__/
+.pytest_cache/
+.git/
+database/
+docs/
+rag/
+screenshots/
+scripts/
+tests/
+articles/04_ai_news_draft.txt
+articles/05_article_review_report.md

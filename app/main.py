@@ -1,19 +1,23 @@
 """서울 ASOS Fact Sheet와 사람 검수 기사를 표시하는 읽기 전용 웹서비스."""
 import json
 import csv
+import os
 from pathlib import Path
 from datetime import datetime
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from app.routers.mysql_observations import router as mysql_router
 
 ROOT = Path(__file__).resolve().parent.parent
 DIR = Path(__file__).resolve().parent
 app = FastAPI(title="드론 운용 기상정보 뉴스", version="1.2.0")
 app.mount("/static", StaticFiles(directory=DIR / "static"), name="static")
-app.include_router(mysql_router)
+# Hosted demos serve only the archive; keep the database router local.
+if os.getenv("VERCEL") != "1" and os.getenv("PUBLIC_DEMO") != "1":
+    from app.routers.mysql_observations import router as mysql_router
+
+    app.include_router(mysql_router)
 
 
 def load_json(path: Path) -> dict:
