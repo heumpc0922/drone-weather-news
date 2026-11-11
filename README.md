@@ -53,10 +53,10 @@ py -m venv .venv
 # 3. 패키지 설치
 python -m pip install -r requirements.txt
 
-# 4. 환경 파일 생성 (처음 한 번만, 기존 .env가 있으면 생략!)
+# 4. MySQL 실습을 할 때만 환경 파일 생성 (기존 .env가 있으면 생략!)
 Copy-Item .env.example .env
 
-# 5. .env에 MySQL 접속정보 설정 후 서버 실행
+# 5. 서버 실행 (MySQL 실습을 할 때만 먼저 .env에 접속정보 설정)
 python -m uvicorn app.main:app --reload
 ```
 
@@ -79,6 +79,7 @@ PowerShell에서 활성화가 차단되면 현재 터미널에서만 다음을 �
 | `GET /` | 드론 기상정보 뉴스 웹 대시보드 |
 | `GET /api/weather` | 검증된 Fact Sheet 통계 |
 | `GET /api/observations?limit=24` | **CSV 기반** 시간별 관측자료 (홈페이지 그래프·표) |
+| `GET /api/hourly-wind` | 서울 ASOS 108번의 00~23시 평균 풍속·건수와 평균이 가장 높은 시간대 |
 | `GET /api/article` | 승인된 수정 기사 열람 |
 | `GET /api/review` | 사람 검수·게시 상태 |
 | `GET /api/mysql/observations?limit=5` | **MySQL 기반** 서울 관측자료 조회 |
@@ -226,7 +227,29 @@ requirements.txt           실행 라이브러리
 실행 명령어:
 
 ```powershell
+python -m pip install pandas matplotlib
 python scripts/08_hourly_wind_analysis.py
+```
+
+### 7. FastAPI와 웹 대시보드에서 확인
+
+[FastAPI](app/main.py)의 `GET /api/hourly-wind`가 기상청 서울 ASOS 108번의 CSV를 직접 읽습니다. 관측 시각과 풍속이 유효한 행을 시각의 시(00~23시)로 묶어 평균 풍속(m/s, 소수점 둘째 자리)과 관측 건수를 계산합니다. 값이 없는 시간대는 평균 `null`, 건수 0으로 반환합니다. `strongest_hour`에는 평균이 가장 높은 시간대가 들어갑니다.
+
+[웹 화면](app/templates/index.html)의 [JavaScript](app/static/js/app.js)는 이 API를 호출해 막대그래프를 그리며, 가장 높은 시간대를 주황색으로 강조합니다. 기존 24시간 풍속 그래프는 최근 24개 관측값을, 새 그래프는 7일에 걸친 **시간대별 평균**을 보여 줍니다.
+
+1. 위 Windows 실행 안내에 따라 패키지를 설치한 다음 `python -m uvicorn app.main:app --reload`를 실행합니다. CSV 기반 대시보드를 보는 데는 `.env`, MySQL 서버, OpenAI 키가 필요하지 않습니다.
+2. [서울 시간대별 평균 풍속 그래프](http://127.0.0.1:8000/#hourly-wind)를 열어 **15시 (3.31 m/s)**가 강조되는지 확인합니다.
+3. [풍속 API](http://127.0.0.1:8000/api/hourly-wind)를 열거나, 서버를 켜 둔 상태로 새 PowerShell에서 아래 명령을 실행합니다.
+
+```powershell
+$wind = Invoke-RestMethod 'http://127.0.0.1:8000/api/hourly-wind'
+$wind.rows.Count            # 24
+$wind.rows[15].count        # 7
+$wind.strongest_hour        # hour=15, average_wind_speed_ms=3.31
+```
+
+`127.0.0.1`은 실행 중인 컴퓨터에서만 열립니다. 공개 HTTPS 주소는 배포 및 외부 접속 검증이 끝난 뒤 안내합니다.
+
 ---
 
 ## 🚁 5차 자동 팩트체킹 실습 — 드론 기상안전 RAG
